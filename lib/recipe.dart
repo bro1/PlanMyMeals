@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'main.dart';
 
 class Recipe extends StatefulWidget {
   Recipe({super.key});
@@ -64,7 +65,19 @@ class _RecipeState extends State<Recipe> {
             isSelected: <bool>[_dessert, _side]
           ),
               const SizedBox(height: 50),
-          ElevatedButton(child: Text("Save"),onPressed: (){},)
+          ElevatedButton(child: Text("Save"),onPressed: save,)
         ])));
   }
+
+  void save() async {
+    var db = await database;
+    if (db != null) {
+      db.execute("""
+      INSERT INTO recipe (title, description, whereToFind, whereToFindURL, sideDish, dessert, restrictions) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      """, [myController.text, descController.text, whereController.text, whereURLController.text, _side, _dessert]);
+    }
+    Navigator.pop(context);
+  }
+
 }
