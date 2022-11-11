@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plan_my_meals/recipe.dart';
 
 import 'main.dart';
 
@@ -70,8 +71,15 @@ class _RecipesState extends State<Recipes> {
                   }),
             ])),
       floatingActionButton: FloatingActionButton(
-        onPressed: (){},
-      tooltip: 'Refresh plan',
+        onPressed: (){
+          Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Recipe()
+                )
+          );
+        },
+      tooltip: 'New recipe',
       child: const Icon(Icons.add),
     ),
     );
