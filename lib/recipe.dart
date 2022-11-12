@@ -71,13 +71,17 @@ class _RecipeState extends State<Recipe> {
 
   void save() async {
     var db = await database;
+    int i = 0;
     if (db != null) {
       db.execute("""
       INSERT INTO recipe (title, description, whereToFind, whereToFindURL, sideDish, dessert, restrictions) 
       VALUES (?, ?, ?, ?, ?, ?, ?)
       """, [myController.text, descController.text, whereController.text, whereURLController.text, _side, _dessert]);
+
+      i = await lastID(db);
     }
-    Navigator.pop(context);
+
+    Navigator.pop(context, i);
   }
 
 }

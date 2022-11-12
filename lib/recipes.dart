@@ -77,7 +77,16 @@ class _RecipesState extends State<Recipes> {
                 MaterialPageRoute(
                   builder: (context) => Recipe()
                 )
-          );
+          ).then((value) {
+
+
+            if (value != 0) {
+              // TODO: refresh and select the newly added one
+
+
+            }
+
+          });
         },
       tooltip: 'New recipe',
       child: const Icon(Icons.add),

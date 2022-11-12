@@ -386,12 +386,12 @@ where planday.planid = ?
 
   }
 
-  Future<int> lastID(Database db) async {
-    var v = await db.rawQuery("select last_insert_rowid() as last");
-    int id = v?[0]["last"] as int;
-    return id;
-  }
 
+}
+Future<int> lastID(Database db) async {
+  var v = await db.rawQuery("select last_insert_rowid() as last");
+  int id = v?[0]["last"] as int;
+  return id;
 }
 
 
