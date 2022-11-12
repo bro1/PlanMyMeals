@@ -15,7 +15,12 @@ class _WishlistState extends State<Wishlist> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Some Day / Wishlist"),
-        ));
+        ),
+        body: Center(
+            child: Column(children: [
+            ])
+        )
+        );
 
   }
 }
