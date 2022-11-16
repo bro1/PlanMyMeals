@@ -13,6 +13,19 @@ class Day extends StatefulWidget {
 class _DayState extends State<Day> {
   late Future<Map<String, Object?>> day;
   late String _dayName = "Day screen";
+  bool _showSearch = false;
+
+  static const List<String> _kOptions = <String>[
+    'pizza',
+    'kugelis',
+    'čeburėkai',
+    'šalykai',
+    'pasta',
+    'dumplings',
+    'pork belly',
+    'something else',
+  ];
+
 
   @override
   void initState() {
@@ -43,7 +56,8 @@ class _DayState extends State<Day> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text("Title: ${snapshot.data?['title']}"),
+                       Text("Title: ${snapshot.data?['title']}"),
+
                       if (snapshot.data?["description"] != null) Text("Description: ${snapshot.data?["description"]}"),
                       Text("Takeaway?: ${snapshot.data?["takeaway"]}"),
                       Text("Leftovers?: ${snapshot.data?["leftovers"]}"),
@@ -53,11 +67,6 @@ class _DayState extends State<Day> {
                           onPressed: () async {
                             var db = await database;
                             db?.execute("update planday set leftovers = true, takeaway = null where id = ?", [widget.dayID]);
-
-                            // TODO: do I need this? - we are closing the screen and going back anyway
-                            setState(() {
-                              day = getDay();
-                            });
                             Navigator.pop(context);
                           },
                         ),
@@ -65,20 +74,44 @@ class _DayState extends State<Day> {
                           onPressed: () async {
                             var db = await database;
                             db?.execute("update planday set leftovers = null, takeaway = true where id = ?", [widget.dayID]);
-
-                            // TODO: do I need this? - we are closing the screen and going back anyway
-                            setState(() {
-                              day = getDay();
-                            });
-
                             Navigator.pop(context);
                           },
 
                           child: const Text("I'll get takeaway"),
                         ),
-                        ElevatedButton(
-                          onPressed: () {},
+                        if (!_showSearch) ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _showSearch = true;
+                            });
+                          },
                           child: const Text("Look up recipe"),
+                        ),
+                        if (_showSearch) Autocomplete<String>(
+                          optionsBuilder: (TextEditingValue textEditingValue) {
+                            if (textEditingValue.text == '') {
+                              return const Iterable<String>.empty();
+                            }
+                            return _kOptions.where((String option) {
+                              return option.contains(textEditingValue.text.toLowerCase());
+                            });
+                          },
+                          onSelected: (String selection) {
+                            debugPrint('You just selected $selection');
+                          },
+                          fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                            return TextField(
+                                decoration: InputDecoration(prefixIcon: const Icon(Icons.search),),
+                                onTap: () {
+                                setState(() {
+                                  _showSearch = false;
+                                });
+                                },
+                                focusNode: focusNode,
+                                autofocus: true,
+                              controller: textEditingController,
+                            );
+                            }
                         ),
                       ],
                       ),

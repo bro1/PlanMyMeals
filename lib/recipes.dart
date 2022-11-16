@@ -30,6 +30,12 @@ class _RecipesState extends State<Recipes> {
         ),
         body: Center(
             child: Column(children: [
+
+              TextField(
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search)
+                ),
+              ),
               FutureBuilder<List<Map<String, dynamic>>>(
                   future: _recipes,
                   builder: (BuildContext context,
@@ -40,7 +46,10 @@ class _RecipesState extends State<Recipes> {
 
                       return Flexible(
                           child: Scrollbar(
+
                               child: ListView.builder(
+
+                                  restorationId: "recipeslist",
                                   itemCount: plan?.length,
                                   itemBuilder: (context, index) {
 
@@ -79,10 +88,13 @@ class _RecipesState extends State<Recipes> {
                 )
           ).then((value) {
 
-
             if (value != 0) {
-              // TODO: refresh and select the newly added one
+              // TODO: refresh and make sure the newly added one is visible
 
+              var r = _getRecipes();
+              setState(() {
+                _recipes = r;
+              });
 
             }
 
