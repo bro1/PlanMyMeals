@@ -15,16 +15,21 @@ class _DayState extends State<Day> {
   late String _dayName = "Day screen";
   bool _showSearch = false;
 
-  static const List<String> _kOptions = <String>[
-    'pizza',
-    'kugelis',
-    'čeburėkai',
-    'šalykai',
-    'pasta',
-    'dumplings',
-    'pork belly',
-    'something else',
+  // List<String> _kOptions = <String>[
+  //   'pizza',
+  //   'kugelis',
+  //   'čeburėkai',
+  //   'šalykai',
+  //   'pasta',
+  //   'dumplings',
+  //   'pork belly',
+  //   'something else',
+  // ];
+
+  List<String> _kOptions = <String>[
+    '---',
   ];
+
 
 
   @override
@@ -88,13 +93,14 @@ class _DayState extends State<Day> {
                           child: const Text("Look up recipe"),
                         ),
                         if (_showSearch) Autocomplete<String>(
-                          optionsBuilder: (TextEditingValue textEditingValue) {
+                          optionsBuilder: (TextEditingValue textEditingValue) async {
                             if (textEditingValue.text == '') {
                               return const Iterable<String>.empty();
                             }
-                            return _kOptions.where((String option) {
-                              return option.contains(textEditingValue.text.toLowerCase());
-                            });
+                            // return _kOptions.where((String option) {
+                            //   return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                            // });
+                            return await _search(textEditingValue.text);
                           },
                           onSelected: (String selection) {
                             debugPrint('You just selected $selection');
@@ -109,9 +115,11 @@ class _DayState extends State<Day> {
                                 },
                                 focusNode: focusNode,
                                 autofocus: true,
-                              controller: textEditingController,
+                                controller: textEditingController,
+
                             );
-                            }
+                            },
+
                         ),
                       ],
                       ),
@@ -154,4 +162,40 @@ where planday.id = ?
 
     return rm![0];
   }
+
+Future<List<String>> _search(String q) async {
+
+    var a = await getSearch(q);
+    List<String> lst = a.map((e) => e["title"].toString()).toList();
+    return lst;
+}
+
+
+  // void search(String q) {
+  //
+  //   getSearch(q).then((value) {
+  //     List<String> lst = value.entries.map((e) => e.value.toString()).toList();
+  //     setState(() {
+  //       _kOptions = lst;
+  //     });
+  //   });
+  // }
+
+
+Future<List<Map<String, Object?>>> getSearch(String q) async {
+  var db = await database;
+
+  var rm = await db?.rawQuery("""
+SELECT
+	recipe.id,
+	recipe.title,
+	recipe.description
+FROM
+	recipe
+WHERE
+	upper(recipe.title) LIKE ?  
+    """, ["%${q.toUpperCase()}%"]);
+
+  return rm!;
+}
 }
