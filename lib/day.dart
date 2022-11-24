@@ -92,18 +92,23 @@ class _DayState extends State<Day> {
                           },
                           child: const Text("Look up recipe"),
                         ),
-                        if (_showSearch) Autocomplete<String>(
+                        if (_showSearch) Autocomplete<Recipe>(
                           optionsBuilder: (TextEditingValue textEditingValue) async {
                             if (textEditingValue.text == '') {
-                              return const Iterable<String>.empty();
+                              return const Iterable<Recipe>.empty();
                             }
-                            // return _kOptions.where((String option) {
-                            //   return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
-                            // });
-                            return await _search(textEditingValue.text);
+                            return await _searchRecipes(textEditingValue.text);
                           },
-                          onSelected: (String selection) {
+                          displayStringForOption: (Recipe opt) {
+                            return opt.title;
+                          },
+                          onSelected: (Recipe selection) async {
                             debugPrint('You just selected $selection');
+                            await replaceDayWithSpecificRecipe(widget.dayID, selection.id);
+                            setState(() {
+                              day = getDay();
+                            });
+
                           },
                           fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
                             return TextField(
@@ -116,7 +121,6 @@ class _DayState extends State<Day> {
                                 focusNode: focusNode,
                                 autofocus: true,
                                 controller: textEditingController,
-
                             );
                             },
 
@@ -163,23 +167,19 @@ where planday.id = ?
     return rm![0];
   }
 
-Future<List<String>> _search(String q) async {
+  Future<List<Recipe>> _searchRecipes(String q) async {
 
     var a = await getSearch(q);
-    List<String> lst = a.map((e) => e["title"].toString()).toList();
+    List<Recipe> lst = a.map((e) {
+      var recipe = Recipe();
+      recipe.id =  e["id"] as int;
+      recipe.title = e["title"] as String;
+      if (e["description"] != null) recipe.description = e["description"] as String;
+      return recipe;
+    }
+    ).toList();
     return lst;
-}
-
-
-  // void search(String q) {
-  //
-  //   getSearch(q).then((value) {
-  //     List<String> lst = value.entries.map((e) => e.value.toString()).toList();
-  //     setState(() {
-  //       _kOptions = lst;
-  //     });
-  //   });
-  // }
+  }
 
 
 Future<List<Map<String, Object?>>> getSearch(String q) async {
@@ -198,4 +198,17 @@ WHERE
 
   return rm!;
 }
+}
+
+
+
+class Recipe {
+  late int id;
+  late String title;
+  late String description;
+
+  @override
+  String toString() {
+    return title;
+  }
 }

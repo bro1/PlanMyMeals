@@ -240,7 +240,7 @@ where planday.planid = ?
                                   ),
                                   confirmDismiss:
                                       (DismissDirection direction) async {
-                                        replaceDay(plan?[index]["plandayid"], plan?[index]["recipeid"]);
+                                        replaceDayAndRefresh(plan?[index]["plandayid"], plan?[index]["recipeid"]);
                                         return false;
                                         },
                                   background: Container(color: Colors.green),
@@ -320,21 +320,9 @@ where planday.planid = ?
     return Text(planentry?["title"]);
   }
 
-  void replaceDay(int dayID, int recipeID) async {
-    final db = await database;
+  void replaceDayAndRefresh(int dayID, int recipeID) async {
 
-    // get a random recipe
-    // that is not the same as the current
-    List<Map<String, Object?>>? res = await  db?.rawQuery('''
-    SELECT * from recipe
-    where id <> ?
-    order by random() limit 1
-    ''', [recipeID]);
-
-    var nid = res?[0]["id"];
-
-    await db?.execute('''update lnkplandayrecipe set recipeID = ? where plandayid = ? and recipeID = ?''', [nid, dayID, recipeID]);
-    await db?.execute('''update planday set takeaway=null, leftovers=null where id = ?''', [dayID]);
+    replaceDay(dayID, recipeID);
 
     setState(() {
       _plan = _getPlan();
@@ -405,3 +393,31 @@ DateTime next(int day) {
   );
 }
 
+void replaceDay(int dayID, int recipeID) async {
+  final db = await database;
+
+  // get a random recipe
+  // that is not the same as the current
+  List<Map<String, Object?>>? res = await  db?.rawQuery('''
+    SELECT * from recipe
+    where id <> ?
+    order by random() limit 1
+    ''', [recipeID]);
+
+  var nid = res?[0]["id"];
+
+  await db?.execute('''update lnkplandayrecipe set recipeID = ? where plandayid = ? and recipeID = ?''', [nid, dayID, recipeID]);
+  await db?.execute('''update planday set takeaway=null, leftovers=null where id = ?''', [dayID]);
+
+}
+
+
+Future<int> replaceDayWithSpecificRecipe(int dayID, int recipeID) async {
+  final db = await database;
+
+  await db?.execute('''update lnkplandayrecipe set recipeID = ? where plandayid = ?''', [recipeID, dayID]);
+  await db?.execute('''update planday set takeaway=null, leftovers=null where id = ?''', [dayID]);
+
+  return recipeID;
+
+}
