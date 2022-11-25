@@ -107,7 +107,9 @@ class _DayState extends State<Day> {
                             await replaceDayWithSpecificRecipe(widget.dayID, selection.id);
                             setState(() {
                               day = getDay();
+                              _showSearch = false;
                             });
+
 
                           },
                           fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {

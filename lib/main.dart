@@ -322,7 +322,7 @@ where planday.planid = ?
 
   void replaceDayAndRefresh(int dayID, int recipeID) async {
 
-    replaceDay(dayID, recipeID);
+    replaceDayWithRandomRecipe(dayID, recipeID);
 
     setState(() {
       _plan = _getPlan();
@@ -354,10 +354,15 @@ where planday.planid = ?
 
     int i = 0;
 
+    DateTime d = DateTime.now();
     for (final recipe in res!) {
 
       i++;
-      var d = next(i);
+      if (i == 1) {
+        d = next(i);
+      } else {
+        d = d.add(Duration(days: 1));
+      }
       final DateFormat formatter = DateFormat('E, dd MMM');
       final String formatted = formatter.format(d);
 
@@ -393,11 +398,18 @@ DateTime next(int day) {
   );
 }
 
-void replaceDay(int dayID, int recipeID) async {
+
+DateTime dayAfter(DateTime day) {
+
+  return day.add(Duration(days: 1));
+}
+
+
+void replaceDayWithRandomRecipe(int dayID, int recipeID) async {
   final db = await database;
 
-  // get a random recipe
-  // that is not the same as the current
+  // get a random recipe that is
+  // not the same as the current recipe
   List<Map<String, Object?>>? res = await  db?.rawQuery('''
     SELECT * from recipe
     where id <> ?
@@ -419,5 +431,4 @@ Future<int> replaceDayWithSpecificRecipe(int dayID, int recipeID) async {
   await db?.execute('''update planday set takeaway=null, leftovers=null where id = ?''', [dayID]);
 
   return recipeID;
-
 }
