@@ -322,7 +322,7 @@ where planday.planid = ?
 
   void replaceDayAndRefresh(int dayID, int recipeID) async {
 
-    replaceDayWithRandomRecipe(dayID, recipeID);
+    await replaceDayWithRandomRecipe(dayID, recipeID);
 
     setState(() {
       _plan = _getPlan();
@@ -405,7 +405,7 @@ DateTime dayAfter(DateTime day) {
 }
 
 
-void replaceDayWithRandomRecipe(int dayID, int recipeID) async {
+Future<int> replaceDayWithRandomRecipe(int dayID, int recipeID) async {
   final db = await database;
 
   // get a random recipe that is
@@ -420,6 +420,8 @@ void replaceDayWithRandomRecipe(int dayID, int recipeID) async {
 
   await db?.execute('''update lnkplandayrecipe set recipeID = ? where plandayid = ? and recipeID = ?''', [nid, dayID, recipeID]);
   await db?.execute('''update planday set takeaway=null, leftovers=null where id = ?''', [dayID]);
+
+  return 0;
 
 }
 
