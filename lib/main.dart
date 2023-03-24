@@ -11,6 +11,12 @@ import 'package:sqflite/sqflite.dart';
 
 import 'package:intl/intl.dart';
 
+import 'dart:convert';
+import 'dart:io';
+import 'package:path/path.dart';
+
+
+
 Future<Database>? database;
 
 void main() async {
@@ -200,6 +206,39 @@ where planday.planid = ?
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        actions: [
+
+          PopupMenuButton(
+            // add icon, by default "3 dot" icon
+            // icon: Icon(Icons.book)
+              itemBuilder: (context){
+                return [
+                  PopupMenuItem<int>(
+                    value: 0,
+                    child: Text("Backup"),
+                  ),
+
+                  PopupMenuItem<int>(
+                    value: 1,
+                    child: Text("Restore from backup"),
+                  ),
+
+                ];
+              },
+              onSelected:(value) async {
+                if(value == 0){
+                  print("Backup");
+                  final db = await database;
+                  if (db != null) {
+                    createBackupFile(db);
+                  }
+                }else if(value == 1){
+                  print("Settings menu is selected.");
+                }
+              }
+          ),
+
+        ],
       ),
       body: Center(
           child: Column(children: [
@@ -433,4 +472,30 @@ Future<int> replaceDayWithSpecificRecipe(int dayID, int recipeID) async {
   await db?.execute('''update planday set takeaway=null, leftovers=null where id = ?''', [dayID]);
 
   return recipeID;
+}
+
+
+
+
+
+Future<void> createBackupFile(Database database) async {
+
+  // Fetch the data from the database
+  final plans = await database.query('plan');
+  final planDays = await database.query('planday');
+  final recipes = await database.query('recipe');
+  final planDayRecipes = await database.query('lnkplandayrecipe');
+
+  // Convert the data to JSON
+  final backupData = {
+    'plans': plans,
+    'planDays': planDays,
+    'recipes': recipes,
+    'planDayRecipes': planDayRecipes,
+  };
+  final backupJson = json.encode(backupData);
+
+  // Save the JSON to a file
+  final backupFile = await File('/storage/emulated/0/Download/planmymealsbackup.json').create();
+  backupFile.writeAsStringSync(backupJson);
 }
